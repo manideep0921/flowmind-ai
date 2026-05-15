@@ -1,0 +1,295 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── GitHub Dark theme via CSS variables ─────────────────────────────────── */
+:root {
+  /* Backgrounds */
+  --color-canvas-default:     #0d1117;
+  --color-canvas-inset:       #010409;
+  --color-canvas-subtle:      #161b22;
+  --color-canvas-overlay:     #1c2128;
+
+  /* Surfaces */
+  --color-surface-1:          #161b22;
+  --color-surface-2:          #1c2128;
+  --color-surface-3:          #22272e;
+
+  /* Borders */
+  --color-border-default:     #30363d;
+  --color-border-muted:       #21262d;
+  --color-border-subtle:      #484f58;
+
+  /* Foreground */
+  --color-fg-default:         #e6edf3;
+  --color-fg-muted:           #8b949e;
+  --color-fg-subtle:          #6e7681;
+  --color-fg-on-emphasis:     #ffffff;
+
+  /* Accent / Blue */
+  --color-accent-fg:          #388bfd;
+  --color-accent-emphasis:    #1f6feb;
+  --color-accent-muted:       rgba(56, 139, 253, 0.15);
+  --color-accent-subtle:      rgba(56, 139, 253, 0.1);
+
+  /* Success / Green */
+  --color-success-fg:         #3fb950;
+  --color-success-emphasis:   #238636;
+  --color-success-muted:      rgba(35, 134, 54, 0.2);
+  --color-success-subtle:     rgba(63, 185, 80, 0.1);
+
+  /* Danger / Red */
+  --color-danger-fg:          #f85149;
+  --color-danger-emphasis:    #da3633;
+  --color-danger-muted:       rgba(218, 54, 51, 0.2);
+  --color-danger-subtle:      rgba(248, 81, 73, 0.1);
+
+  /* Warning / Yellow */
+  --color-warning-fg:         #d29922;
+  --color-warning-emphasis:   #9e6a03;
+  --color-warning-muted:      rgba(158, 106, 3, 0.2);
+  --color-warning-subtle:     rgba(210, 153, 34, 0.1);
+
+  /* Severe / Orange */
+  --color-severe-fg:          #db6d28;
+  --color-severe-subtle:      rgba(219, 109, 40, 0.1);
+
+  /* Done / Purple */
+  --color-done-fg:            #a371f7;
+  --color-done-subtle:        rgba(163, 113, 247, 0.1);
+
+  /* Neutral */
+  --color-neutral-fg:         #8b949e;
+  --color-neutral-muted:      rgba(110, 118, 129, 0.15);
+  --color-neutral-subtle:     rgba(110, 118, 129, 0.1);
+}
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { color-scheme: dark; }
+
+  body {
+    background-color: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+                 Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background: rgba(56, 139, 253, 0.3);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar          { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track    { background: transparent; }
+  ::-webkit-scrollbar-thumb    { background: var(--color-border-default); border-radius: 6px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--color-border-subtle); }
+
+  /* Focus ring */
+  :focus-visible {
+    outline: 2px solid var(--color-accent-fg);
+    outline-offset: 2px;
+  }
+}
+
+/* ── Component classes ───────────────────────────────────────────────────── */
+@layer components {
+
+  /* ─ Cards ─ */
+  .card {
+    background: var(--color-surface-1);
+    border: 1px solid var(--color-border-default);
+    border-radius: 6px;
+  }
+  .card-inset {
+    background: var(--color-canvas-default);
+    border: 1px solid var(--color-border-default);
+    border-radius: 6px;
+  }
+  .card-hover:hover {
+    background: var(--color-surface-2);
+  }
+
+  /* ─ Buttons ─ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 80ms ease, border-color 80ms ease, color 80ms ease;
+    user-select: none;
+    white-space: nowrap;
+    font-family: inherit;
+    line-height: 1;
+  }
+  .btn:disabled { opacity: 0.4; pointer-events: none; }
+
+  .btn-sm  { @apply btn text-xs px-3 rounded-md; height: 28px; font-size: 12px; }
+  .btn-md  { @apply btn text-sm px-3 rounded-md; height: 32px; font-size: 14px; }
+  .btn-lg  { @apply btn text-sm px-4 rounded-md; height: 36px; font-size: 14px; }
+
+  /* Primary — GitHub green style */
+  .btn-primary {
+    @apply btn;
+    background: var(--color-success-emphasis);
+    color: var(--color-fg-on-emphasis);
+    border: 1px solid rgba(240,246,252,0.1);
+  }
+  .btn-primary:hover { background: #2ea043; }
+  .btn-primary:active { background: #238636; }
+
+  /* Default — outlined */
+  .btn-default {
+    @apply btn;
+    background: var(--color-surface-1);
+    color: var(--color-fg-default);
+    border: 1px solid var(--color-border-default);
+  }
+  .btn-default:hover { background: var(--color-surface-2); border-color: var(--color-border-subtle); }
+
+  /* Danger */
+  .btn-danger {
+    @apply btn;
+    background: var(--color-danger-subtle);
+    color: var(--color-danger-fg);
+    border: 1px solid rgba(248,81,73,0.25);
+  }
+  .btn-danger:hover { background: var(--color-danger-muted); }
+
+  /* Ghost */
+  .btn-ghost {
+    @apply btn;
+    background: transparent;
+    color: var(--color-fg-muted);
+    border: 1px solid transparent;
+  }
+  .btn-ghost:hover { background: var(--color-neutral-muted); color: var(--color-fg-default); }
+
+  /* Accent */
+  .btn-accent {
+    @apply btn;
+    background: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
+    border: 1px solid rgba(240,246,252,0.1);
+  }
+  .btn-accent:hover { background: #388bfd; }
+
+  /* ─ Badges ─ */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 1px 8px;
+    border-radius: 2em;
+    border: 1px solid;
+    line-height: 18px;
+  }
+  .badge-critical { background: var(--color-danger-subtle);  color: var(--color-danger-fg);   border-color: rgba(248,81,73,0.25); }
+  .badge-high     { background: var(--color-severe-subtle);  color: var(--color-severe-fg);   border-color: rgba(219,109,40,0.25); }
+  .badge-medium   { background: var(--color-warning-subtle); color: var(--color-warning-fg);  border-color: rgba(210,153,34,0.25); }
+  .badge-low      { background: var(--color-success-subtle); color: var(--color-success-fg);  border-color: rgba(63,185,80,0.25); }
+  .badge-accent   { background: var(--color-accent-subtle);  color: var(--color-accent-fg);   border-color: rgba(56,139,253,0.25); }
+  .badge-done     { background: var(--color-done-subtle);    color: var(--color-done-fg);     border-color: rgba(163,113,247,0.25); }
+  .badge-neutral  { background: var(--color-neutral-muted);  color: var(--color-fg-muted);    border-color: var(--color-border-default); }
+  .badge-success  { background: var(--color-success-subtle); color: var(--color-success-fg);  border-color: rgba(63,185,80,0.25); }
+
+  /* ─ Status dots ─ */
+  .dot         { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-success { background: var(--color-success-fg); }
+  .dot-warning { background: var(--color-warning-fg); }
+  .dot-danger  { background: var(--color-danger-fg); animation: pulse 2s infinite; }
+  .dot-running { background: var(--color-accent-fg); animation: pulse 2s infinite; }
+  .dot-neutral { background: var(--color-fg-subtle); }
+
+  /* ─ Input ─ */
+  .input {
+    width: 100%;
+    background: var(--color-canvas-default);
+    border: 1px solid var(--color-border-default);
+    color: var(--color-fg-default);
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 20px;
+    transition: border-color 80ms ease, box-shadow 80ms ease;
+    outline: none;
+  }
+  .input::placeholder { color: var(--color-fg-subtle); }
+  .input:focus {
+    border-color: var(--color-accent-fg);
+    box-shadow: 0 0 0 3px rgba(56, 139, 253, 0.3);
+  }
+
+  /* ─ Code ─ */
+  .code-block {
+    background: var(--color-canvas-inset);
+    border: 1px solid var(--color-border-muted);
+    border-radius: 6px;
+    padding: 12px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 12px;
+    color: var(--color-fg-muted);
+    overflow: auto;
+  }
+
+  /* ─ Label ─ */
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--color-fg-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* ── Utility overrides with CSS vars ─────────────────────────────────────── */
+@layer utilities {
+  /* Text */
+  .text-gh-fg         { color: var(--color-fg-default); }
+  .text-gh-muted      { color: var(--color-fg-muted); }
+  .text-gh-subtle     { color: var(--color-fg-subtle); }
+  .text-gh-accent     { color: var(--color-accent-fg); }
+  .text-gh-success    { color: var(--color-success-fg); }
+  .text-gh-danger     { color: var(--color-danger-fg); }
+  .text-gh-warning    { color: var(--color-warning-fg); }
+  .text-gh-severe     { color: var(--color-severe-fg); }
+  .text-gh-done       { color: var(--color-done-fg); }
+
+  /* BG */
+  .bg-gh-canvas       { background: var(--color-canvas-default); }
+  .bg-gh-surface      { background: var(--color-surface-1); }
+  .bg-gh-surface-2    { background: var(--color-surface-2); }
+  .bg-gh-overlay      { background: var(--color-canvas-overlay); }
+
+  /* Border */
+  .border-gh          { border-color: var(--color-border-default); }
+  .border-gh-muted    { border-color: var(--color-border-muted); }
+  .border-gh-subtle   { border-color: var(--color-border-subtle); }
+
+  /* Hover helpers */
+  .hover-surface:hover { background: var(--color-surface-2); }
+
+  /* Animations */
+  .animate-fade-in  { animation: fadeIn 0.15s ease-out; }
+  .animate-slide-up { animation: slideUp 0.2s ease-out; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(5px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+}

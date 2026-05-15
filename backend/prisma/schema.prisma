@@ -1,0 +1,254 @@
+// This is your Prisma schema file
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
+}
+
+// ── Users & Orgs ──────────────────────────────────────────────────────────
+
+model Organization {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  plan      Plan     @default(FREE)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+  workflows Workflow[]
+  apiKeys   ApiKey[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  passwordHash   String
+  name           String
+  role           Role         @default(MEMBER)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId])
+}
+
+model ApiKey {
+  id             String       @id @default(uuid())
+  key            String       @unique
+  name           String
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  lastUsedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+// ── Workflows ─────────────────────────────────────────────────────────────
+
+model Workflow {
+  id             String           @id @default(uuid())
+  name           String
+  description    String?
+  source         WorkflowSource
+  externalId     String?          // ID in Zapier/Make/n8n
+  status         WorkflowStatus   @default(ACTIVE)
+  organizationId String
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  config         Json             @default("{}")
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  executions     Execution[]
+  alerts         Alert[]
+  riskScore      RiskScore?
+
+  @@index([organizationId])
+  @@index([source])
+}
+
+model Execution {
+  id           String          @id @default(uuid())
+  workflowId   String
+  workflow     Workflow        @relation(fields: [workflowId], references: [id])
+  status       ExecutionStatus
+  startedAt    DateTime
+  finishedAt   DateTime?
+  durationMs   Int?
+  triggerType  String?
+  inputPayload Json?
+  outputData   Json?
+  errorMessage String?
+  rawLogs      String?
+  createdAt    DateTime        @default(now())
+
+  steps        ExecutionStep[]
+  analysis     FailureAnalysis?
+
+  @@index([workflowId])
+  @@index([status])
+  @@index([startedAt])
+}
+
+model ExecutionStep {
+  id          String          @id @default(uuid())
+  executionId String
+  execution   Execution       @relation(fields: [executionId], references: [id])
+  stepName    String
+  stepIndex   Int
+  status      ExecutionStatus
+  startedAt   DateTime
+  finishedAt  DateTime?
+  durationMs  Int?
+  inputData   Json?
+  outputData  Json?
+  errorCode   String?
+  errorMessage String?
+  retryCount  Int             @default(0)
+
+  @@index([executionId])
+}
+
+// ── AI Analysis ───────────────────────────────────────────────────────────
+
+model FailureAnalysis {
+  id                String    @id @default(uuid())
+  executionId       String    @unique
+  execution         Execution @relation(fields: [executionId], references: [id])
+  rootCause         String
+  explanation       String    // Plain English for business users
+  technicalDetails  String
+  confidenceScore   Float     // 0.0 - 1.0
+  severity          Severity
+  category          FailureCategory
+  suggestedFixes    Json      // Array of fix suggestions
+  autoHealAttempted Boolean   @default(false)
+  autoHealSuccess   Boolean?
+  autoHealLog       String?
+  businessImpact    Json?     // e.g. { leads: 43, estimatedRevenueLoss: 4300 }
+  similarFailures   Json?     // IDs of similar past failures
+  createdAt         DateTime  @default(now())
+
+  @@index([executionId])
+}
+
+// ── Alerts ────────────────────────────────────────────────────────────────
+
+model Alert {
+  id          String      @id @default(uuid())
+  workflowId  String
+  workflow    Workflow    @relation(fields: [workflowId], references: [id])
+  type        AlertType
+  severity    Severity
+  title       String
+  message     String
+  status      AlertStatus @default(OPEN)
+  metadata    Json?
+  resolvedAt  DateTime?
+  createdAt   DateTime    @default(now())
+
+  @@index([workflowId])
+  @@index([status])
+}
+
+// ── Predictive ────────────────────────────────────────────────────────────
+
+model RiskScore {
+  id            String   @id @default(uuid())
+  workflowId    String   @unique
+  workflow      Workflow @relation(fields: [workflowId], references: [id])
+  score         Float    // 0.0 - 1.0
+  factors       Json     // What's contributing to the risk
+  predictedAt   DateTime @default(now())
+  nextCheckAt   DateTime
+}
+
+// ── Ingest Webhooks ───────────────────────────────────────────────────────
+
+model IngestEvent {
+  id          String         @id @default(uuid())
+  source      WorkflowSource
+  rawPayload  Json
+  processed   Boolean        @default(false)
+  executionId String?
+  createdAt   DateTime       @default(now())
+
+  @@index([processed])
+  @@index([source])
+}
+
+// ── Enums ─────────────────────────────────────────────────────────────────
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum WorkflowSource {
+  ZAPIER
+  MAKE
+  N8N
+  INTERNAL
+  GENERIC
+}
+
+enum WorkflowStatus {
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+enum ExecutionStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+  TIMEOUT
+}
+
+enum Severity {
+  CRITICAL
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum FailureCategory {
+  AUTH_ERROR
+  RATE_LIMIT
+  SCHEMA_CHANGE
+  NETWORK_ERROR
+  TIMEOUT
+  DATA_VALIDATION
+  CONFIGURATION
+  THIRD_PARTY_OUTAGE
+  UNKNOWN
+}
+
+enum AlertType {
+  FAILURE
+  DEGRADATION
+  PREDICTION
+  ANOMALY
+  RECOVERY
+}
+
+enum AlertStatus {
+  OPEN
+  ACKNOWLEDGED
+  RESOLVED
+  SUPPRESSED
+}
